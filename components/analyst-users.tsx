@@ -12,8 +12,8 @@ export function AnalystUsers() {
 
   const fetchUsers = async () => {
     try {
-      const res = await API.get(`/users?authRole=${user?.role}`)
-      setUsers(res.data)
+      const res = await API.get(`/users?authRole=${user?.role}&size=1000`)
+      setUsers(res.data.content || res.data)
     } catch (err) {
       console.error("Analyst users error:", err)
     }

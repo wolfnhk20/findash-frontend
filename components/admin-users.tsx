@@ -17,13 +17,13 @@ export function AdminUsers() {
     try {
       const token = localStorage.getItem("token")
 
-      const res = await API.get(`/users?authRole=${user?.role}`, {
+      const res = await API.get(`/users?authRole=${user?.role}&size=1000`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       })
 
-      setUsers(res.data)
+      setUsers(res.data.content || res.data)
     } catch (err) {
       console.error(err)
     }

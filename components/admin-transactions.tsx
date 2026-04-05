@@ -38,11 +38,11 @@ export function AdminTransactions() {
 
       const query = params.toString()
 
-      const txnRes = await API.get(`/transactions?${query}`, config)
-      setTransactions(txnRes.data)
+      const txnRes = await API.get(`/transactions?${query}&size=1000`, config)
+      setTransactions(txnRes.data.content || txnRes.data)
 
-      const usersRes = await API.get(`/users?authRole=${user.role}`, config)
-      setUsers(usersRes.data)
+      const usersRes = await API.get(`/users?authRole=${user.role}&size=1000`, config)
+      setUsers(usersRes.data.content || usersRes.data)
 
     } catch (err) {
       console.error("Fetch error:", err)

@@ -20,15 +20,14 @@ export function ViewerTransactions() {
       params.append("role", user.role)
       params.append("userId", user.id)
 
-      // 🔥 APPLY FILTERS
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value as string)
       })
 
       const query = params.toString()
 
-      const txnRes = await API.get(`/transactions?${query}`)
-      setTransactions(txnRes.data)
+      const txnRes = await API.get(`/transactions?${query}&size=1000`)
+      setTransactions(txnRes.data.content || txnRes.data)
 
     } catch (err) {
       console.error("Viewer transactions error:", err)

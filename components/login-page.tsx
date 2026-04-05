@@ -122,18 +122,18 @@ export function LoginPage() {
               <span className="text-muted-foreground">|</span>
               <button
                 type="button"
-                onClick={() => setEmail("analyst@example.com")}
+                onClick={() => setEmail("analyst1@example.com")}
                 className="text-xs text-primary hover:underline"
               >
-                analyst@example.com
+                analyst1@example.com
               </button>
               <span className="text-muted-foreground">|</span>
               <button
                 type="button"
-                onClick={() => setEmail("deep@example.com")}
+                onClick={() => setEmail("viewer1@example.com")}
                 className="text-xs text-primary hover:underline"
               >
-                deep@example.com
+                viewer1@example.com
               </button>
             </div>
           </div>

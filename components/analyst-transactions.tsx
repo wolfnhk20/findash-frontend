@@ -26,11 +26,11 @@ export function AnalystTransactions() {
 
       const query = params.toString()
 
-      const txnRes = await API.get(`/transactions?${query}`)
-      setTransactions(txnRes.data)
+      const txnRes = await API.get(`/transactions?${query}&size=1000`)
+      setTransactions(txnRes.data.content || txnRes.data)
 
-      const usersRes = await API.get(`/users?authRole=${user.role}`)
-      setUsers(usersRes.data)
+      const usersRes = await API.get(`/users?authRole=${user.role}&size=1000`)
+      setUsers(usersRes.data.content || usersRes.data)
 
     } catch (err) {
       console.error("Analyst transactions error:", err)
