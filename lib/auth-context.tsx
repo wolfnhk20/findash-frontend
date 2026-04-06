@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react"
 
 type Role = "ADMIN" | "ANALYST" | "VIEWER"
 
@@ -23,24 +23,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token")
+      const role = localStorage.getItem("role") as Role | null
+      const userId = localStorage.getItem("userId")
+
+      if (token && role && userId) {
+        setUser({
+          email: "",
+          role,
+          id: userId
+        })
+      }
+    }
+  }, [])
+
   const login = useCallback(async (email: string): Promise<Role> => {
     setIsLoading(true)
 
     try {
-      const res = await fetch(`https://findash-backend-m4ta.onrender.com/auth/login?email=${email}`, {
+      const res = await fetch(`https://findash-backend-production.up.railway.app/auth/login?email=${email}`, {
         method: "POST",
       })
 
-      // 🔥 NOW EXPECT JSON (from backend fix)
-      const data = await res.json()
+      let data: any = null
 
-      if (!res.ok || !data.token) {
+      try {
+        data = await res.json()
+      } catch {
+        data = null
+      }
+
+      if (!res.ok) {
+        if (res.status === 403) {
+          throw new Error("Your account is inactive. Contact admin.")
+        }
+        throw new Error(data?.message || "Login failed")
+      }
+
+      if (!data || !data.token) {
         throw new Error("Invalid login response")
       }
 
       const { token, userId, role } = data
 
-      // ✅ STORE EVERYTHING
       localStorage.setItem("token", token)
       localStorage.setItem("role", role)
       localStorage.setItem("userId", userId)
@@ -53,9 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return role
 
-    } catch (err) {
-      console.error("Login error:", err)
-      throw err
+    } catch (err: any) {
+      throw new Error(err.message || "Login failed")
     } finally {
       setIsLoading(false)
     }

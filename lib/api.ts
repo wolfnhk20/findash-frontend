@@ -1,14 +1,16 @@
 import axios from "axios"
 
 const API = axios.create({
-  baseURL: "https://findash-backend-m4ta.onrender.com"
+  baseURL: "https://findash-backend-production.up.railway.app"
 })
 
 API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token")
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token")
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
   }
 
   return config

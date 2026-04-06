@@ -45,8 +45,8 @@ export function LoginPage() {
         router.push("/viewer")
       }
 
-    } catch (err) {
-      setError("Login failed")
+    } catch (err: any) {
+      setError(err.message || "Login failed")
     }
   }
 
@@ -130,10 +130,10 @@ export function LoginPage() {
               <span className="text-muted-foreground">|</span>
               <button
                 type="button"
-                onClick={() => setEmail("viewer1@example.com")}
+                onClick={() => setEmail("viewer2@example.com")}
                 className="text-xs text-primary hover:underline"
               >
-                viewer1@example.com
+                viewer2@example.com
               </button>
             </div>
           </div>
