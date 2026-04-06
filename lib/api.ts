@@ -1,7 +1,7 @@
 import axios from "axios"
 
 const API = axios.create({
-  baseURL: "https://findash-backend-production.up.railway.app"
+  baseURL: "https://findash-backend-m4ta.onrender.com"
 })
 
 API.interceptors.request.use((config) => {

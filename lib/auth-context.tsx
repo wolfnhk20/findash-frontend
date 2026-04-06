@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
 
     try {
-      const res = await fetch(`https://findash-backend-production.up.railway.app/auth/login?email=${email}`, {
+      const res = await fetch(`https://findash-backend-m4ta.onrender.com/auth/login?email=${email}`, {
         method: "POST",
       })
 
