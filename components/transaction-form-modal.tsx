@@ -50,17 +50,20 @@ export function TransactionFormModal({
         category: transaction.category,
         date: transaction.date,
         description: transaction.description || "",
-        userId: transaction.userId || ""
+        userId: transaction.userId || users?.[0]?.id || ""
       })
     } else {
       setFormData({
-        ...defaultForm,
-        userId: users.length > 0 ? users[0].id : ""
+        amount: "",
+        type: "EXPENSE",
+        category: "DINING",
+        date: new Date().toISOString().split("T")[0],
+        description: "",
+        userId: users?.[0]?.id || ""
       })
     }
   }, [transaction, open, users])
 
-  // 🔥 RESET FORM WHEN CLOSED (CRITICAL)
   useEffect(() => {
     if (!open) {
       setFormData(defaultForm)
@@ -88,8 +91,8 @@ export function TransactionFormModal({
   const isEdit = !!transaction
 
   const categories = [
-    "TRANSFERS","DINING","GROCERIES","TRANSPORT","SHOPPING",
-    "SERVICES","ENTERTAINMENT","SUBSCRIPTION","TRAVEL","SALARY","RENT"
+    "TRANSFERS", "DINING", "GROCERIES", "TRANSPORT", "SHOPPING",
+    "SERVICES", "ENTERTAINMENT", "SUBSCRIPTION", "TRAVEL", "SALARY", "RENT"
   ]
 
   const transactionTypes = ["INCOME", "EXPENSE"]
@@ -195,7 +198,7 @@ export function TransactionFormModal({
             <div className="space-y-2">
               <Label>Assign to User</Label>
               <Select
-                value={formData.userId}
+                value={formData.userId || ""}
                 onValueChange={(v) =>
                   setFormData({ ...formData, userId: v })
                 }

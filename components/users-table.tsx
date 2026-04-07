@@ -43,7 +43,6 @@ export function UsersTable({
 
   const roles: Role[] = ["ADMIN", "ANALYST", "VIEWER"]
 
-  // 🔥 CRITICAL FIX (reset filters on new data / user switch)
   useEffect(() => {
     setRoleFilter("ALL")
     setStatusFilter("ALL")

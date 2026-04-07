@@ -19,13 +19,10 @@ API.interceptors.request.use((config) => {
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (typeof window !== "undefined") {
-      const status = error?.response?.status
+    const status = error?.response?.status
 
-      if (status === 401 || status === 403) {
-        localStorage.clear()
-        window.location.href = "/"
-      }
+    if (status === 401) {
+      localStorage.clear()
     }
 
     return Promise.reject(error)
