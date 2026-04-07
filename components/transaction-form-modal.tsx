@@ -19,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
-import type { TransactionType, Category } from "@/lib/types"
 
 export function TransactionFormModal({
   open,
@@ -30,71 +29,69 @@ export function TransactionFormModal({
   onSubmit
 }: any) {
 
-  const [formData, setFormData] = useState<any>({
+  const defaultForm = {
     amount: "",
     type: "EXPENSE",
-    category: "OTHER",
+    category: "DINING",
     date: new Date().toISOString().split("T")[0],
     description: "",
     userId: ""
-  })
+  }
+
+  const [formData, setFormData] = useState<any>(defaultForm)
 
   useEffect(() => {
     if (!open) return
 
     if (transaction) {
       setFormData({
-        amount: transaction.amount.toString(),
+        amount: transaction.amount?.toString() || "",
         type: transaction.type,
         category: transaction.category,
         date: transaction.date,
-        description: transaction.description,
-        userId: transaction.userId
+        description: transaction.description || "",
+        userId: transaction.userId || ""
       })
     } else {
       setFormData({
-        amount: "",
-        type: "EXPENSE",
-        category: "OTHER",
-        date: new Date().toISOString().split("T")[0],
-        description: "",
+        ...defaultForm,
         userId: users.length > 0 ? users[0].id : ""
       })
     }
-  }, [transaction, open])
+  }, [transaction, open, users])
+
+  // 🔥 RESET FORM WHEN CLOSED (CRITICAL)
+  useEffect(() => {
+    if (!open) {
+      setFormData(defaultForm)
+    }
+  }, [open])
 
   const handleSubmit = (e: any) => {
     e.preventDefault()
 
+    if (!formData.amount || isNaN(Number(formData.amount))) return
+
     const submitData = {
-      amount: parseFloat(formData.amount),
+      amount: Number(formData.amount),
       type: formData.type,
       category: formData.category,
       date: formData.date,
-      description: formData.description,
+      description: formData.description || "",
       ...(showUserField && { userId: formData.userId })
     }
 
     onSubmit(submitData)
-
     onOpenChange(false)
   }
 
   const isEdit = !!transaction
 
   const categories = [
-    "TRANSFERS",
-    "DINING",
-    "GROCERIES",
-    "TRANSPORT",
-    "SHOPPING",
-    "SERVICES",
-    "ENTERTAINMENT",
-    "SUBSCRIPTION",
-    "TRAVEL",
-    "SALARY",
-    "RENT"
+    "TRANSFERS","DINING","GROCERIES","TRANSPORT","SHOPPING",
+    "SERVICES","ENTERTAINMENT","SUBSCRIPTION","TRAVEL","SALARY","RENT"
   ]
+
   const transactionTypes = ["INCOME", "EXPENSE"]
 
   return (
@@ -115,7 +112,6 @@ export function TransactionFormModal({
 
         <form onSubmit={handleSubmit} className="space-y-5 py-2">
 
-          {/* AMOUNT */}
           <div className="space-y-2">
             <Label>Amount</Label>
             <Input
@@ -130,7 +126,6 @@ export function TransactionFormModal({
             />
           </div>
 
-          {/* TYPE + CATEGORY */}
           <div className="grid grid-cols-2 gap-4">
 
             <div className="space-y-2">
@@ -146,9 +141,7 @@ export function TransactionFormModal({
                 </SelectTrigger>
                 <SelectContent>
                   {transactionTypes.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
-                    </SelectItem>
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -167,9 +160,7 @@ export function TransactionFormModal({
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -177,7 +168,6 @@ export function TransactionFormModal({
 
           </div>
 
-          {/* DATE */}
           <div className="space-y-2">
             <Label>Date</Label>
             <Input
@@ -190,7 +180,6 @@ export function TransactionFormModal({
             />
           </div>
 
-          {/* DESCRIPTION */}
           <div className="space-y-2">
             <Label>Description</Label>
             <Input
@@ -202,7 +191,6 @@ export function TransactionFormModal({
             />
           </div>
 
-          {/* USER SELECT */}
           {showUserField && users.length > 0 && (
             <div className="space-y-2">
               <Label>Assign to User</Label>
@@ -226,7 +214,6 @@ export function TransactionFormModal({
             </div>
           )}
 
-          {/* BUTTONS */}
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel

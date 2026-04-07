@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table"
@@ -43,6 +43,16 @@ export function UsersTable({
 
   const roles: Role[] = ["ADMIN", "ANALYST", "VIEWER"]
 
+  // 🔥 CRITICAL FIX (reset filters on new data / user switch)
+  useEffect(() => {
+    setRoleFilter("ALL")
+    setStatusFilter("ALL")
+    setSearch("")
+    setCurrentPage(1)
+    setSelectedUser(null)
+    setDetailsOpen(false)
+  }, [users.length])
+
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
 
@@ -84,17 +94,16 @@ export function UsersTable({
 
           <div className="flex flex-wrap gap-3 items-center">
 
-            {/* 🔍 SEARCH */}
             <input
               placeholder="Search users..."
               className="border px-2 py-1 rounded"
+              value={search}
               onChange={(e) => {
                 setSearch(e.target.value)
                 setCurrentPage(1)
               }}
             />
 
-            {/* ROLE FILTER */}
             <Select
               value={roleFilter}
               onValueChange={(value) => {
@@ -115,7 +124,6 @@ export function UsersTable({
               </SelectContent>
             </Select>
 
-            {/* STATUS FILTER */}
             <Select
               value={statusFilter}
               onValueChange={(value) => {
@@ -200,7 +208,6 @@ export function UsersTable({
               </TableBody>
             </Table>
 
-            {/* PAGINATION */}
             {totalPages > 1 && (
               <div className="flex justify-between mt-4">
                 <Button onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>

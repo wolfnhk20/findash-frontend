@@ -9,14 +9,13 @@ export function ViewerTransactions() {
   const { user } = useAuth()
 
   const [transactions, setTransactions] = useState<any[]>([])
-  const [filters, setFilters] = useState<any>({}) // 🔥 IMPORTANT
+  const [filters, setFilters] = useState<any>({})
 
   const fetchData = async () => {
     try {
       if (!user?.id) return
 
       const params = new URLSearchParams()
-
       params.append("role", user.role)
       params.append("userId", user.id)
 
@@ -35,8 +34,14 @@ export function ViewerTransactions() {
   }
 
   useEffect(() => {
-    fetchData()
-  }, [user, filters]) 
+    if (user?.id) fetchData()
+  }, [user, filters])
+
+  // 🔥 CRITICAL FIX (reset on user switch)
+  useEffect(() => {
+    setTransactions([])
+    setFilters({})
+  }, [user?.id])
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -50,9 +55,7 @@ export function ViewerTransactions() {
 
       <TransactionsTable
         transactions={transactions}
-
-        onFilterChange={setFilters} 
-
+        onFilterChange={setFilters}
         showActions={false}
         showUserColumns={false}
       />

@@ -13,7 +13,7 @@ export function AnalystDashboard() {
   const [users, setUsers] = useState<any[]>([])
   const [analytics, setAnalytics] = useState<any>(null)
 
-  const [filters, setFilters] = useState<any>({}) // 🔥 IMPORTANT
+  const [filters, setFilters] = useState<any>({})
 
   const fetchData = async () => {
     try {
@@ -22,7 +22,6 @@ export function AnalystDashboard() {
       const params = new URLSearchParams()
       params.append("role", user.role)
 
-      // 🔥 APPLY FILTERS
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value as string)
       })
@@ -44,8 +43,16 @@ export function AnalystDashboard() {
   }
 
   useEffect(() => {
-    fetchData()
-  }, [user, filters]) // 🔥 IMPORTANT
+    if (user) fetchData()
+  }, [user, filters])
+
+  // 🔥 CRITICAL FIX (reset state on user switch)
+  useEffect(() => {
+    setTransactions([])
+    setUsers([])
+    setAnalytics(null)
+    setFilters({})
+  }, [user?.id])
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -68,10 +75,8 @@ export function AnalystDashboard() {
       <TransactionsTable
         transactions={transactions}
         users={users}
-
-        onFilterChange={setFilters} // 🔥 CONNECTED
-
-        showActions={false} // 🔥 read-only
+        onFilterChange={setFilters}
+        showActions={false}
         showUserColumns={true}
       />
 

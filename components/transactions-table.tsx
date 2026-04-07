@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Table,
   TableBody,
@@ -22,7 +22,6 @@ import { Badge } from "@/components/ui/badge"
 import { Empty } from "@/components/ui/empty"
 import type { Transaction, TransactionType, Category, User } from "@/lib/types"
 import { Pencil, Trash2, Plus, Receipt, Eye } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { TransactionDetailsModal } from "@/components/transaction-details-modal"
 
 interface TransactionsTableProps {
@@ -31,16 +30,7 @@ interface TransactionsTableProps {
   onAdd?: () => void
   onEdit?: (transaction: Transaction) => void
   onDelete?: (id: string) => void
-
-  onFilterChange?: (filters: {
-    type?: string
-    category?: string
-    search?: string
-    sort?: string
-    startDate?: string
-    endDate?: string
-  }) => void
-
+  onFilterChange?: (filters: any) => void
   showActions?: boolean
   showUserColumns?: boolean
 }
@@ -88,14 +78,26 @@ export function TransactionsTable({
     return map
   }, [users])
 
+  // 🔥 FIX: reset filters when transactions change (new user context)
+  useEffect(() => {
+    setTypeFilter("ALL")
+    setCategoryFilter("ALL")
+    setSearch("")
+    setSort("")
+    setStartDate("")
+    setEndDate("")
+  }, [transactions.length])
+
   const triggerFilters = (override: any = {}) => {
+    const finalStart = override.startDate ?? startDate
+    const finalEnd = override.endDate ?? endDate
+
     onFilterChange?.({
       type: typeFilter === "ALL" ? undefined : typeFilter,
       category: categoryFilter === "ALL" ? undefined : categoryFilter,
       search,
       sort,
-      startDate,
-      endDate,
+      ...(finalStart && finalEnd ? { startDate: finalStart, endDate: finalEnd } : {}),
       ...override
     })
   }
@@ -119,17 +121,16 @@ export function TransactionsTable({
 
             <div className="flex flex-wrap gap-2">
 
-              {/* SEARCH */}
               <input
                 placeholder="Search..."
                 className="border px-2 py-1 rounded"
+                value={search}
                 onChange={(e) => {
                   setSearch(e.target.value)
                   triggerFilters({ search: e.target.value })
                 }}
               />
 
-              {/* TYPE */}
               <Select
                 value={typeFilter}
                 onValueChange={(value) => {
@@ -147,7 +148,6 @@ export function TransactionsTable({
                 </SelectContent>
               </Select>
 
-              {/* CATEGORY */}
               <Select
                 value={categoryFilter}
                 onValueChange={(value) => {
@@ -166,8 +166,8 @@ export function TransactionsTable({
                 </SelectContent>
               </Select>
 
-              {/* SORT */}
               <Select
+                value={sort}
                 onValueChange={(value) => {
                   setSort(value)
                   triggerFilters({ sort: value })
@@ -184,9 +184,9 @@ export function TransactionsTable({
                 </SelectContent>
               </Select>
 
-              {/* DATE RANGE */}
               <input
                 type="date"
+                value={startDate}
                 onChange={(e) => {
                   setStartDate(e.target.value)
                   triggerFilters({ startDate: e.target.value })
@@ -195,6 +195,7 @@ export function TransactionsTable({
 
               <input
                 type="date"
+                value={endDate}
                 onChange={(e) => {
                   setEndDate(e.target.value)
                   triggerFilters({ endDate: e.target.value })
@@ -213,7 +214,6 @@ export function TransactionsTable({
         </CardHeader>
 
         <CardContent>
-
           {transactions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8">
               <Receipt className="size-8 text-gray-400 mb-2" />
@@ -246,9 +246,7 @@ export function TransactionsTable({
                   return (
                     <TableRow key={t.id} onClick={() => handleRowClick(t)}>
                       <TableCell>{formatCurrency(t.amount)}</TableCell>
-                      <TableCell>
-                        <Badge>{t.type}</Badge>
-                      </TableCell>
+                      <TableCell><Badge>{t.type}</Badge></TableCell>
                       <TableCell>{t.category}</TableCell>
                       <TableCell>{formatDate(t.date)}</TableCell>
 

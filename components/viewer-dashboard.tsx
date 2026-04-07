@@ -11,18 +11,16 @@ export function ViewerDashboard() {
 
   const [transactions, setTransactions] = useState<any[]>([])
   const [analytics, setAnalytics] = useState<any>(null)
-  const [filters, setFilters] = useState<any>({}) // 🔥 IMPORTANT
+  const [filters, setFilters] = useState<any>({})
 
   const fetchData = async () => {
     try {
       if (!user?.id) return
 
       const params = new URLSearchParams()
-
       params.append("role", user.role)
       params.append("userId", user.id)
 
-      // 🔥 APPLY FILTERS
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value as string)
       })
@@ -41,8 +39,15 @@ export function ViewerDashboard() {
   }
 
   useEffect(() => {
-    fetchData()
-  }, [user, filters]) // 🔥 IMPORTANT
+    if (user?.id) fetchData()
+  }, [user, filters])
+
+  // 🔥 CRITICAL FIX (reset on user switch)
+  useEffect(() => {
+    setTransactions([])
+    setAnalytics(null)
+    setFilters({})
+  }, [user?.id])
 
   return (
     <div className="space-y-8">
@@ -64,9 +69,7 @@ export function ViewerDashboard() {
 
       <TransactionsTable
         transactions={transactions}
-
-        onFilterChange={setFilters} // 🔥 CONNECTED
-
+        onFilterChange={setFilters}
         showActions={false}
         showUserColumns={false}
       />

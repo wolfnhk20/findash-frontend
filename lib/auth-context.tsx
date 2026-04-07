@@ -21,21 +21,26 @@ const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window === "undefined") return
+
+    try {
       const token = localStorage.getItem("token")
       const role = localStorage.getItem("role") as Role | null
       const userId = localStorage.getItem("userId")
+      const email = localStorage.getItem("email")
 
       if (token && role && userId) {
         setUser({
-          email: "",
+          email: email || "",
           role,
           id: userId
         })
       }
+    } finally {
+      setIsLoading(false)
     }
   }, [])
 
@@ -43,12 +48,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
 
     try {
-      const res = await fetch(`https://findash-backend-m4ta.onrender.com/auth/login?email=${email}`, {
-        method: "POST",
-      })
+      const res = await fetch(
+        `https://findash-backend-m4ta.onrender.com/auth/login?email=${email}`,
+        { method: "POST" }
+      )
 
       let data: any = null
-
       try {
         data = await res.json()
       } catch {
@@ -62,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data?.message || "Login failed")
       }
 
-      if (!data || !data.token) {
+      if (!data?.token) {
         throw new Error("Invalid login response")
       }
 
@@ -71,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("token", token)
       localStorage.setItem("role", role)
       localStorage.setItem("userId", userId)
+      localStorage.setItem("email", email)
 
       setUser({
         email,
@@ -88,10 +94,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(() => {
-    localStorage.removeItem("token")
-    localStorage.removeItem("role")
-    localStorage.removeItem("userId")
+    localStorage.clear()
     setUser(null)
+    window.location.href = "/"
   }, [])
 
   return (

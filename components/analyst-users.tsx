@@ -12,7 +12,9 @@ export function AnalystUsers() {
 
   const fetchUsers = async () => {
     try {
-      const res = await API.get(`/users?authRole=${user?.role}&size=1000`)
+      if (!user) return
+
+      const res = await API.get(`/users?authRole=${user.role}&size=1000`)
       setUsers(res.data.content || res.data)
     } catch (err) {
       console.error("Analyst users error:", err)
@@ -22,6 +24,11 @@ export function AnalystUsers() {
   useEffect(() => {
     if (user) fetchUsers()
   }, [user])
+
+  // 🔥 CRITICAL FIX (reset on user switch)
+  useEffect(() => {
+    setUsers([])
+  }, [user?.id])
 
   return (
     <div className="space-y-8">
@@ -35,7 +42,7 @@ export function AnalystUsers() {
 
       <UsersTable
         users={users}
-        showActions={false} // 🔥 read-only
+        showActions={false}
       />
 
     </div>

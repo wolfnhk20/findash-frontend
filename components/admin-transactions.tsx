@@ -11,7 +11,7 @@ export function AdminTransactions() {
 
   const [transactions, setTransactions] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
-  const [filters, setFilters] = useState<any>({}) // 🔥 IMPORTANT
+  const [filters, setFilters] = useState<any>({})
 
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<any>(null)
@@ -20,28 +20,19 @@ export function AdminTransactions() {
     try {
       if (!user) return
 
-      const token = localStorage.getItem("token")
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-
       const params = new URLSearchParams()
       params.append("role", user.role)
 
-      // 🔥 APPLY FILTERS
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value as string)
       })
 
       const query = params.toString()
 
-      const txnRes = await API.get(`/transactions?${query}&size=1000`, config)
+      const txnRes = await API.get(`/transactions?${query}&size=1000`)
       setTransactions(txnRes.data.content || txnRes.data)
 
-      const usersRes = await API.get(`/users?authRole=${user.role}&size=1000`, config)
+      const usersRes = await API.get(`/users?authRole=${user.role}&size=1000`)
       setUsers(usersRes.data.content || usersRes.data)
 
     } catch (err) {
@@ -50,8 +41,17 @@ export function AdminTransactions() {
   }
 
   useEffect(() => {
-    fetchData()
+    if (user) fetchData()
   }, [user, filters])
+
+  // 🔥 CRITICAL FIX (state reset on user change)
+  useEffect(() => {
+    setTransactions([])
+    setUsers([])
+    setFilters({})
+    setEditingTransaction(null)
+    setIsFormOpen(false)
+  }, [user?.id])
 
   const handleAdd = () => {
     setEditingTransaction(null)
@@ -65,14 +65,7 @@ export function AdminTransactions() {
 
   const handleDelete = async (id: string) => {
     try {
-      const token = localStorage.getItem("token")
-
-      await API.delete(`/transactions/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-
+      await API.delete(`/transactions/${id}`)
       fetchData()
     } catch (err) {
       console.error("Delete error:", err)
@@ -81,21 +74,19 @@ export function AdminTransactions() {
 
   const handleSubmit = async (data: any) => {
     try {
-      const token = localStorage.getItem("token")
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      const payload = {
+        amount: Number(data.amount),
+        type: data.type?.toUpperCase(),
+        category: data.category,
+        description: data.description || "",
+        date: data.date,
+        userId: data.userId || user?.id
       }
 
       if (editingTransaction) {
-        await API.put(`/transactions/${editingTransaction.id}`, data, config)
+        await API.put(`/transactions/${editingTransaction.id}`, payload)
       } else {
-        await API.post(`/transactions`, {
-          ...data,
-          userId: data.userId || user?.id
-        }, config)
+        await API.post(`/transactions`, payload)
       }
 
       fetchData()
@@ -118,9 +109,7 @@ export function AdminTransactions() {
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
-
-        onFilterChange={setFilters} 
-
+        onFilterChange={setFilters}
         showActions={true}
         showUserColumns={true}
       />

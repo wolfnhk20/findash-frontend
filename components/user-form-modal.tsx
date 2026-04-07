@@ -34,42 +34,57 @@ const statuses: UserStatus[] = ["ACTIVE", "INACTIVE"]
 
 export function UserFormModal({ open, onOpenChange, user, onSubmit }: UserFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formData, setFormData] = useState({
+
+  const defaultForm = {
     name: "",
     email: "",
     role: "VIEWER" as Role,
     status: "ACTIVE" as UserStatus
-  })
+  }
+
+  const [formData, setFormData] = useState(defaultForm)
 
   useEffect(() => {
+    if (!open) return
+
     if (user) {
       setFormData({
-        name: user.name,
-        email: user.email,
+        name: user.name || "",
+        email: user.email || "",
         role: user.role,
         status: user.status
       })
     } else {
-      setFormData({
-        name: "",
-        email: "",
-        role: "VIEWER",
-        status: "ACTIVE"
-      })
+      setFormData(defaultForm)
     }
   }, [user, open])
 
+  // 🔥 RESET ON CLOSE
+  useEffect(() => {
+    if (!open) {
+      setFormData(defaultForm)
+      setIsSubmitting(false)
+    }
+  }, [open])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!formData.name.trim() || !formData.email.trim()) return
+
     setIsSubmitting(true)
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    
-    onSubmit(formData)
-    
-    setIsSubmitting(false)
-    onOpenChange(false)
+
+    try {
+      await onSubmit({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        role: formData.role,
+        status: formData.status
+      })
+    } finally {
+      setIsSubmitting(false)
+      onOpenChange(false)
+    }
   }
 
   const isEdit = !!user
@@ -78,77 +93,91 @@ export function UserFormModal({ open, onOpenChange, user, onSubmit }: UserFormMo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl">{isEdit ? "Edit User" : "Add User"}</DialogTitle>
+          <DialogTitle className="text-xl">
+            {isEdit ? "Edit User" : "Add User"}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit ? "Update the user details below." : "Fill in the details for the new user."}
+            {isEdit
+              ? "Update the user details below."
+              : "Fill in the details for the new user."}
           </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-5 py-2">
+
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium">Name</Label>
+            <Label>Name</Label>
             <Input
-              id="name"
               placeholder="Enter full name"
               value={formData.name}
-              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setFormData(prev => ({ ...prev, name: e.target.value }))
+              }
               required
               className="h-11"
             />
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+            <Label>Email</Label>
             <Input
-              id="email"
               type="email"
               placeholder="name@example.com"
               value={formData.email}
-              onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+              onChange={(e) =>
+                setFormData(prev => ({ ...prev, email: e.target.value }))
+              }
               required
               className="h-11"
             />
           </div>
+
           <div className="grid grid-cols-2 gap-4">
+
             <div className="space-y-2">
-              <Label htmlFor="role" className="text-sm font-medium">Role</Label>
+              <Label>Role</Label>
               <Select
                 value={formData.role}
                 onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, role: value as Role }))
+                  setFormData(prev => ({ ...prev, role: value as Role }))
                 }
               >
-                <SelectTrigger id="role" className="h-11">
-                  <SelectValue placeholder="Select role" />
+                <SelectTrigger className="h-11">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {roles.map((role) => (
                     <SelectItem key={role} value={role}>
-                      {role.charAt(0) + role.slice(1).toLowerCase()}
+                      {role}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="status" className="text-sm font-medium">Status</Label>
+              <Label>Status</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, status: value as UserStatus }))
+                  setFormData(prev => ({ ...prev, status: value as UserStatus }))
                 }
               >
-                <SelectTrigger id="status" className="h-11">
-                  <SelectValue placeholder="Select status" />
+                <SelectTrigger className="h-11">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {statuses.map((status) => (
                     <SelectItem key={status} value={status}>
-                      {status.charAt(0) + status.slice(1).toLowerCase()}
+                      {status}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
           </div>
+
           <DialogFooter className="gap-2 pt-4">
             <Button
               type="button"
@@ -158,6 +187,7 @@ export function UserFormModal({ open, onOpenChange, user, onSubmit }: UserFormMo
             >
               Cancel
             </Button>
+
             <Button type="submit" disabled={isSubmitting} className="min-w-[100px]">
               {isSubmitting ? (
                 <>
@@ -169,6 +199,7 @@ export function UserFormModal({ open, onOpenChange, user, onSubmit }: UserFormMo
               )}
             </Button>
           </DialogFooter>
+
         </form>
       </DialogContent>
     </Dialog>

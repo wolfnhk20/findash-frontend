@@ -14,7 +14,7 @@ export function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([])
   const [analytics, setAnalytics] = useState<any>(null)
 
-  const [filters, setFilters] = useState<any>({}) // 🔥 IMPORTANT
+  const [filters, setFilters] = useState<any>({})
 
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<any>(null)
@@ -24,10 +24,8 @@ export function AdminDashboard() {
       if (!user) return
 
       const params = new URLSearchParams()
-
       params.append("role", user.role)
 
-      // 🔥 APPLY ALL FILTERS
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value as string)
       })
@@ -49,8 +47,18 @@ export function AdminDashboard() {
   }
 
   useEffect(() => {
-    fetchData()
+    if (user) fetchData()
   }, [user, filters])
+
+  // 🔥 RESET STATE ON USER CHANGE (CRITICAL FIX)
+  useEffect(() => {
+    setTransactions([])
+    setUsers([])
+    setAnalytics(null)
+    setFilters({})
+    setEditingTransaction(null)
+    setIsFormOpen(false)
+  }, [user?.id])
 
   const handleAdd = () => {
     setEditingTransaction(null)
@@ -73,13 +81,19 @@ export function AdminDashboard() {
 
   const handleSubmit = async (data: any) => {
     try {
+      const payload = {
+        amount: Number(data.amount),
+        type: data.type?.toUpperCase(),
+        category: data.category,
+        description: data.description || "",
+        date: data.date,
+        userId: data.userId || user?.id
+      }
+
       if (editingTransaction) {
-        await API.put(`/transactions/${editingTransaction.id}`, data)
+        await API.put(`/transactions/${editingTransaction.id}`, payload)
       } else {
-        await API.post(`/transactions`, {
-          ...data,
-          userId: data.userId || user?.id
-        })
+        await API.post(`/transactions`, payload)
       }
 
       fetchData()
@@ -110,9 +124,7 @@ export function AdminDashboard() {
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
-
-        onFilterChange={setFilters} // 🔥 CONNECTED
-
+        onFilterChange={setFilters}
         showActions={true}
         showUserColumns={true}
       />

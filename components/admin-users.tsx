@@ -15,14 +15,9 @@ export function AdminUsers() {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem("token")
+      if (!user) return
 
-      const res = await API.get(`/users?authRole=${user?.role}&size=1000`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-
+      const res = await API.get(`/users?authRole=${user.role}&size=1000`)
       setUsers(res.data.content || res.data)
     } catch (err) {
       console.error(err)
@@ -32,6 +27,13 @@ export function AdminUsers() {
   useEffect(() => {
     if (user) fetchUsers()
   }, [user])
+
+  // 🔥 CRITICAL FIX (reset on user change)
+  useEffect(() => {
+    setUsers([])
+    setEditingUser(null)
+    setIsFormOpen(false)
+  }, [user?.id])
 
   const handleAdd = () => {
     setEditingUser(null)
@@ -45,14 +47,9 @@ export function AdminUsers() {
 
   const handleDeactivate = async (id: string) => {
     try {
-      const token = localStorage.getItem("token")
+      if (!user) return
 
-      await API.patch(`/users/${id}/deactivate?authRole=${user?.role}`, null, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-
+      await API.patch(`/users/${id}/deactivate?authRole=${user.role}`)
       fetchUsers()
     } catch (err) {
       console.error(err)
@@ -61,18 +58,19 @@ export function AdminUsers() {
 
   const handleSubmit = async (data: any) => {
     try {
-      const token = localStorage.getItem("token")
+      if (!user) return
 
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      const payload = {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        status: data.status || "ACTIVE"
       }
 
       if (editingUser) {
-        await API.put(`/users/${editingUser.id}?authRole=${user?.role}`, data, config)
+        await API.put(`/users/${editingUser.id}?authRole=${user.role}`, payload)
       } else {
-        await API.post(`/users`, data, config)
+        await API.post(`/users`, payload)
       }
 
       fetchUsers()
