@@ -12,12 +12,11 @@ export function AnalystDashboard() {
   const [transactions, setTransactions] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
   const [analytics, setAnalytics] = useState<any>(null)
-
   const [filters, setFilters] = useState<any>({})
 
   const fetchData = async () => {
     try {
-      if (!user) return
+      if (!user?.role) return
 
       const params = new URLSearchParams()
       params.append("role", user.role)
@@ -28,17 +27,18 @@ export function AnalystDashboard() {
 
       const query = params.toString()
 
-      const txnRes = await API.get(`/transactions?${query}`)
+      const [txnRes, analyticsRes, usersRes] = await Promise.all([
+        API.get(`/transactions?${query}`),
+        API.get(`/transactions/analytics?${query}`),
+        API.get(`/users?authRole=${user.role}`)
+      ])
+
       setTransactions(txnRes.data)
-
-      const analyticsRes = await API.get(`/transactions/analytics?${query}`)
       setAnalytics(analyticsRes.data)
-
-      const usersRes = await API.get(`/users?authRole=${user.role}`)
       setUsers(usersRes.data)
 
     } catch (err) {
-      console.error("Analyst fetch error:", err)
+      console.error("Dashboard error:", err)
     }
   }
 
@@ -46,7 +46,6 @@ export function AnalystDashboard() {
     if (user) fetchData()
   }, [user, filters])
 
-  // 🔥 CRITICAL FIX (reset state on user switch)
   useEffect(() => {
     setTransactions([])
     setUsers([])
@@ -56,12 +55,9 @@ export function AnalystDashboard() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-1">
-          Welcome back! Here&apos;s your financial overview.
-        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
+        <p className="text-muted-foreground">Financial overview</p>
       </div>
 
       {analytics && (
@@ -79,7 +75,6 @@ export function AnalystDashboard() {
         showActions={false}
         showUserColumns={true}
       />
-
     </div>
   )
 }

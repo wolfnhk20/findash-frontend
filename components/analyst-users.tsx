@@ -7,17 +7,17 @@ import API from "@/lib/api"
 
 export function AnalystUsers() {
   const { user } = useAuth()
-
   const [users, setUsers] = useState<any[]>([])
 
   const fetchUsers = async () => {
     try {
-      if (!user) return
+      if (!user?.role) return
 
       const res = await API.get(`/users?authRole=${user.role}&size=1000`)
       setUsers(res.data.content || res.data)
+
     } catch (err) {
-      console.error("Analyst users error:", err)
+      console.error("Users error:", err)
     }
   }
 
@@ -25,26 +25,18 @@ export function AnalystUsers() {
     if (user) fetchUsers()
   }, [user])
 
-  // 🔥 CRITICAL FIX (reset on user switch)
   useEffect(() => {
     setUsers([])
   }, [user?.id])
 
   return (
     <div className="space-y-8">
-
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Users</h1>
-        <p className="text-muted-foreground mt-1">
-          View all user accounts.
-        </p>
-      </div>
+      <h1 className="text-3xl font-bold">Users</h1>
 
       <UsersTable
         users={users}
         showActions={false}
       />
-
     </div>
   )
 }

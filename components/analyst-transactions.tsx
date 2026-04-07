@@ -14,7 +14,7 @@ export function AnalystTransactions() {
 
   const fetchData = async () => {
     try {
-      if (!user) return
+      if (!user?.role) return
 
       const params = new URLSearchParams()
       params.append("role", user.role)
@@ -25,14 +25,16 @@ export function AnalystTransactions() {
 
       const query = params.toString()
 
-      const txnRes = await API.get(`/transactions?${query}&size=1000`)
-      setTransactions(txnRes.data.content || txnRes.data)
+      const [txnRes, usersRes] = await Promise.all([
+        API.get(`/transactions?${query}&size=1000`),
+        API.get(`/users?authRole=${user.role}&size=1000`)
+      ])
 
-      const usersRes = await API.get(`/users?authRole=${user.role}&size=1000`)
+      setTransactions(txnRes.data.content || txnRes.data)
       setUsers(usersRes.data.content || usersRes.data)
 
     } catch (err) {
-      console.error("Analyst transactions error:", err)
+      console.error("Transactions error:", err)
     }
   }
 
@@ -40,7 +42,6 @@ export function AnalystTransactions() {
     if (user) fetchData()
   }, [user, filters])
 
-  // 🔥 CRITICAL FIX (reset on user switch)
   useEffect(() => {
     setTransactions([])
     setUsers([])
@@ -49,13 +50,7 @@ export function AnalystTransactions() {
 
   return (
     <div className="space-y-8">
-
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Transactions</h1>
-        <p className="text-muted-foreground mt-1">
-          View all transaction records.
-        </p>
-      </div>
+      <h1 className="text-3xl font-bold">Transactions</h1>
 
       <TransactionsTable
         transactions={transactions}
@@ -64,7 +59,6 @@ export function AnalystTransactions() {
         showActions={false}
         showUserColumns={true}
       />
-
     </div>
   )
 }
