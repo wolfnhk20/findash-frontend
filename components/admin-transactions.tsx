@@ -44,7 +44,6 @@ export function AdminTransactions() {
     if (user) fetchData()
   }, [user, filters])
 
-  // 🔥 CRITICAL FIX (state reset on user change)
   useEffect(() => {
     setTransactions([])
     setUsers([])

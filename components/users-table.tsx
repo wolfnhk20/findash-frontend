@@ -154,7 +154,10 @@ export function UsersTable({
       <CardContent>
 
         {paginatedUsers.length === 0 ? (
-          <Empty icon={<Users />} title="No users found" />
+          <Empty className="flex flex-col items-center justify-center gap-2">
+            <Users size={48} />
+            <div>No users found</div>
+          </Empty>
         ) : (
           <>
             <Table>

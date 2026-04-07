@@ -50,19 +50,23 @@ export function TransactionFormModal({
         category: transaction.category,
         date: transaction.date,
         description: transaction.description || "",
-        userId: transaction.userId || users?.[0]?.id || ""
+        userId: transaction.userId || ""
       })
     } else {
       setFormData({
-        amount: "",
-        type: "EXPENSE",
-        category: "DINING",
-        date: new Date().toISOString().split("T")[0],
-        description: "",
-        userId: users?.[0]?.id || ""
+        ...defaultForm
       })
     }
-  }, [transaction, open, users])
+  }, [transaction, open])
+
+  useEffect(() => {
+    if (users.length > 0 && showUserField && !formData.userId) {
+      setFormData((prev: any) => ({
+        ...prev,
+        userId: users[0].id
+      }))
+    }
+  }, [users])
 
   useEffect(() => {
     if (!open) {

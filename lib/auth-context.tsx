@@ -49,7 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const res = await fetch(
-        `https://findash-backend-m4ta.onrender.com/auth/login?email=${email}`,
+        // `https://findash-backend-m4ta.onrender.com/auth/login?email=${email}`,
+        'http://localhost:8080/auth/login?email=' + encodeURIComponent(email),
         { method: "POST" }
       )
 

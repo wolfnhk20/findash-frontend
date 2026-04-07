@@ -1,7 +1,8 @@
 import axios from "axios"
 
 const API = axios.create({
-  baseURL: "https://findash-backend-m4ta.onrender.com"
+  // baseURL: "https://findash-backend-m4ta.onrender.com"
+  baseURL: "http://localhost:8080"
 })
 
 API.interceptors.request.use((config) => {
