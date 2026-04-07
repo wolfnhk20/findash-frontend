@@ -347,6 +347,6 @@ Seed these into the database before running locally. All must have `status = ACT
 ## Live Links
 
 - Frontend: [https://findash-eta-two.vercel.app/](https://findash-eta-two.vercel.app/)
-- Backend: [https://findash-backend-production.up.railway.app](https://findash-backend-production.up.railway.app)
+- Backend: [https://findash-backend-m4ta.onrender.com](https://findash-backend-m4ta.onrender.com)
 
 The backend is the source of truth for all access control and validation.
